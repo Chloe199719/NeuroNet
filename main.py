@@ -5,8 +5,12 @@ import imghdr
 import numpy as np
 from matplotlib import pyplot as plt
 from keras.models import Sequential, load_model
-from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
+
+from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, BatchNormalization
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.metrics import Precision, Recall, BinaryAccuracy
+from keras.regularizers import l2
+
 import cv2
 
 gpus = tf.config.experimental.list_physical_devices("GPU")
@@ -18,6 +22,11 @@ data_dir = "data"
 os.listdir(data_dir)
 
 image_exts = ["jpeg", "jpg", "bmp", "png"]
+
+
+
+# Clean up data
+
 for image_class in os.listdir(data_dir):
     for image in os.listdir(os.path.join(data_dir, image_class)):
         image_path = os.path.join(data_dir, image_class, image)
@@ -31,7 +40,7 @@ for image_class in os.listdir(data_dir):
             print("issue with image {}".format(image_path))
             os.remove(image_path)
 
-data = tf.keras.utils.image_dataset_from_directory("data")
+data = tf.keras.utils.image_dataset_from_directory("data", batch_size=16)
 data = data.map(lambda x, y: (x/255.0, y))
 scalar = data.as_numpy_iterator().next()
 
@@ -61,10 +70,45 @@ model.add(Dense(256, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 model.compile("adam", loss=tf.losses.BinaryCrossentropy(),
               metrics=["accuracy"])
+
+# model.add(Conv2D(32, (3, 3), activation='relu',
+#           padding='same', input_shape=(256, 256, 3)))
+# model.add(MaxPooling2D())
+# model.add(BatchNormalization())
+# model.add(Dropout(0.2))
+
+# model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+# model.add(MaxPooling2D())
+# model.add(BatchNormalization())
+# model.add(Dropout(0.3))
+
+# model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
+# model.add(MaxPooling2D())
+# model.add(BatchNormalization())
+# model.add(Dropout(0.4))
+
+# model.add(Flatten())
+
+# model.add(Dense(256, activation='relu', kernel_regularizer=l2(0.01)))
+# model.add(Dropout(0.5))
+# model.add(Dense(1, activation='sigmoid'))
+
+# # Use of EarlyStopping
+# es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
+
+# # ModelCheckpoint
+# mc = ModelCheckpoint('best_model.h5', monitor='val_accuracy',
+#                      mode='max', verbose=1, save_best_only=True)
+# model.compile(optimizer="adam",
+#               loss=tf.losses.BinaryCrossentropy(), metrics=["accuracy"])
+
 print(model.summary())
+
+
 logdir = "logs"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
-hist = model.fit(train, epochs=5, validation_data=val,
+hist = model.fit(train, epochs=10, validation_data=val,
+
                  callbacks=[tensorboard_callback])
 
 pre = Precision()

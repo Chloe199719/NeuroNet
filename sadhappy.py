@@ -10,11 +10,9 @@ from keras.metrics import Precision, Recall, BinaryAccuracy
 import cv2
 
 
-
-model = load_model(os.path.join("models", "manorwomman.h5"))
+model = load_model(os.path.join("models", "happy_sad_model.h5"))
 img = cv2.imread("men3.jpg")
 img1 = cv2.imread("woman6.jpg")
-
 plt.imshow(img)
 plt.show()
 resize = tf.image.resize(img, (256, 256))
@@ -25,7 +23,6 @@ result.append(model.predict(np.expand_dims(resize1/255.0, 0)))
 print(result)
 for yhat in result:
     if yhat < 0.5:
-        print("Female")
+        print("Happy")
     else:
-        print("Male")
-
+        print("Sad")
