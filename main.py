@@ -5,10 +5,12 @@ import imghdr
 import numpy as np
 from matplotlib import pyplot as plt
 from keras.models import Sequential, load_model
+
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, BatchNormalization
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.metrics import Precision, Recall, BinaryAccuracy
 from keras.regularizers import l2
+
 import cv2
 
 gpus = tf.config.experimental.list_physical_devices("GPU")
@@ -22,7 +24,9 @@ os.listdir(data_dir)
 image_exts = ["jpeg", "jpg", "bmp", "png"]
 
 
+
 # Clean up data
+
 for image_class in os.listdir(data_dir):
     for image in os.listdir(os.path.join(data_dir, image_class)):
         image_path = os.path.join(data_dir, image_class, image)
@@ -66,6 +70,7 @@ model.add(Dense(256, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 model.compile("adam", loss=tf.losses.BinaryCrossentropy(),
               metrics=["accuracy"])
+
 # model.add(Conv2D(32, (3, 3), activation='relu',
 #           padding='same', input_shape=(256, 256, 3)))
 # model.add(MaxPooling2D())
@@ -103,6 +108,7 @@ print(model.summary())
 logdir = "logs"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
 hist = model.fit(train, epochs=10, validation_data=val,
+
                  callbacks=[tensorboard_callback])
 
 pre = Precision()
